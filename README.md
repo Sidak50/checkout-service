@@ -22,3 +22,4 @@ curl -X POST http://localhost:8003/checkout           -H "Content-Type: applicat
 ```bash
 docker compose up --build
 ```
+fix 
