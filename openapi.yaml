@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Checkout Service
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+  /checkout:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+      responses:
+        "201":
+          description: Created
+components:
+  schemas:
+    CartItem:
+      type: object
+      required: [product_id, quantity, price]
+      properties:
+        product_id: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        price: { type: number, minimum: 0 }
+    CheckoutRequest:
+      type: object
+      required: [user_id, items]
+      properties:
+        user_id: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CartItem" }
+        currency: { type: string, default: USD }
+        payment_method: { type: string, default: card }
+        idempotency_key: { type: string }

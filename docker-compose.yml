@@ -1,0 +1,8 @@
+services:
+  checkout:
+    build: .
+    container_name: checkout-svc
+    ports:
+      - "8003:8003"
+    environment:
+      - FLASK_ENV=production
