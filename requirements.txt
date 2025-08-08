@@ -6,3 +6,5 @@ pytest-cov==5.0.0
 flask-cors==4.0.1
 flask-swagger-ui
 flask-swagger-ui
+stripe
+flask-swagger-ui 

@@ -1,13 +1,20 @@
 openapi: 3.0.3
 info:
   title: Checkout Service
-  version: 1.0.0
+  version: 1.1.0
 paths:
   /health:
     get:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
   /checkout:
     post:
       requestBody:
@@ -16,9 +23,37 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CheckoutRequest"
+            examples:
+              stripeSuccess:
+                summary: Stripe success (test mode)
+                value:
+                  user_id: "u1"
+                  items:
+                    - { product_id: "p1", quantity: 2, price: 10.0 }
+                    - { product_id: "p2", quantity: 1, price: 15.0 }
+                  currency: "USD"
+                  use_stripe: true
+                  stripe_payment_method_id: "pm_card_visa"
+              mockOnly:
+                summary: No Stripe (mock authorize)
+                value:
+                  user_id: "u1"
+                  items:
+                    - { product_id: "p1", quantity: 2, price: 10.0 }
+                  currency: "USD"
+                  use_stripe: false
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+        "400":
+          description: Bad request (validation)
+        "500":
+          description: Server error
+
 components:
   schemas:
     CartItem:
@@ -28,14 +63,38 @@ components:
         product_id: { type: string }
         quantity: { type: integer, minimum: 1 }
         price: { type: number, minimum: 0 }
+
     CheckoutRequest:
       type: object
       required: [user_id, items]
       properties:
+        use_stripe:
+          type: boolean
+          default: false
+          description: "Set true to charge via Stripe (test mode)."
+        stripe_payment_method_id:
+          type: string
+          description: "Stripe test payment method id, e.g. pm_card_visa"
         user_id: { type: string }
         items:
           type: array
           items: { $ref: "#/components/schemas/CartItem" }
         currency: { type: string, default: USD }
         payment_method: { type: string, default: card }
-        idempotency_key: { type: string }
+        idempotency_key: { type: string, nullable: true }
+
+    CheckoutResponse:
+      type: object
+      required: [order_id, total, currency, status]
+      properties:
+        order_id: { type: string, example: "a1b2c3d4-..." }
+        total: { type: number, example: 41.75 }
+        currency: { type: string, example: USD }
+        status: { type: string, example: succeeded }
+        payment:
+          type: object
+          nullable: true
+          description: "Present when Stripe is used"
+          properties:
+            status: { type: string, example: succeeded }
+            payment_intent_id: { type: string, example: "pi_3Nc..." }

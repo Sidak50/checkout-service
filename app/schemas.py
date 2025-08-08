@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, conint, conlist
+from typing import Optional
 
 class CartItem(BaseModel):
     product_id: str
@@ -10,10 +11,14 @@ class CheckoutRequest(BaseModel):
     items: conlist(CartItem, min_length=1)
     currency: str = "USD"
     payment_method: str = "card"
-    idempotency_key: str | None = None
+    idempotency_key: Optional[str] = None
+    # Stripe options
+    use_stripe: bool = False
+    stripe_payment_method_id: Optional[str] = None  # e.g. "pm_card_visa"
 
 class CheckoutResponse(BaseModel):
     order_id: str
     total: float
-    currency: str
+    currency: str = "USD"
     status: str
+    payment: Optional[dict] = None
